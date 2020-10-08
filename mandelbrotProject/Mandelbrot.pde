@@ -2,6 +2,11 @@ float coordx = -1.5;  // Default coordinates for best effect
 float coordx2 = -1.5;
 float coordy = 1.5;
 float coordy2 = 1.5;
+float hue;
+float saturation;
+float value;
+boolean keepColour = false;
+
 class Mandelbrot {
   Mandelbrot() {
   }
@@ -15,7 +20,7 @@ class Mandelbrot {
   }
 
   void createMatrix() {
-    int iterations = 50; // This is the maximum amount of iterations that the numbers run through, to see if they tend towards infinity or not
+    int iterations = 100; // This is the maximum amount of iterations that the numbers run through, to see if they tend towards infinity or not
 
     for (int x=0; x<width; x++) {
       for (int y=0; y<height; y++) {  // Two for loops so it applies for all the pixels in the screen
@@ -36,12 +41,42 @@ class Mandelbrot {
           a = real + complexA;  // add the original value of a and b to the real/imaginary component for the next loop
           b = imaginary + complexB; 
 
-          if (abs(real + imaginary) > 60) {  // abs() takes the absolute value of a number (so if it's -2, the absolute value |-2| is 2)
-            break;                           // if that number tends towards infinity (here represented by 60, the for-loop breaks.
+          if (abs(real+imaginary) > 60) {  // abs() takes the absolute value of a number (so if it's -2, the absolute value |-2| is 2)
+            break;                         // if that number tends towards infinity (here represented by 60, the for-loop breaks.
           }
         }
+        
+        // Color Segment of the code
 
-        color brightness = color(map(n, 0, iterations, 0, 255),0,0);  // Background color, any pixel not within the mandelbrot set 
+        if (key == 'c')
+          keepColour = true;
+          
+        if (key == 'v')
+          keepColour = false;
+          
+        if (keepColour == true) {
+          colorMode(HSB, 100);
+          hue = (255*n / iterations);
+          if (n % 2 == 0) {
+            saturation = 255; // even numbers darker
+          } else {
+            saturation = 50; // odd numbers brighter -> striped effect
+          }
+          value = 255;
+
+          if (n < iterations) 
+            value = 255;
+          else
+            value = 0;
+        } 
+        else {
+          colorMode(RGB, 255);
+          hue = map(n, 0, iterations, 0, 255);
+          saturation = map(n, 0, iterations, 0, 255);
+          value = map(n, 0, iterations, 0, 255);
+        }
+        color brightness = color(hue, saturation, value);  // Background color, any pixel not within the mandelbrot set 
+
         if (n == iterations) {
           brightness = color(0, 0, 0);  // All values that do not tend to infinity are colored black (within the iterations) (meaning pixels within the set)
         }
@@ -51,6 +86,7 @@ class Mandelbrot {
     }
   }
 }
+
 void keyPressed() {  // This part  is for zooming into the set
   if (key == 'z' && coordx < 0 && coordy > -1.25) {  // zooms in 
     coordx = coordx + 0.125;
